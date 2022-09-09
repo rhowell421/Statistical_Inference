@@ -1,0 +1,166 @@
+---
+title: "ToothGrowth Analysis"
+author: "Rhowell"
+date: "September 9, 2022"
+output: 
+  html_document:
+    keep_md: yes
+    theme: readable
+  pdf_document: default
+---
+
+
+---
+
+#### Instructions
+
+* Load the ToothGrowth data and perform some basic exploratory data analyses
+
+* Provide a basic summary of the data.
+
+* Use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose. (Only use the techniques from class, even if there's other approaches worth considering)
+
+* State your conclusions and the assumptions needed for your conclusions.
+
+---
+
+### Exploratory data analysis
+
+Let's first load the libraries needed for the analysis 
+
+```{r, message=FALSE, warning=FALSE}
+# Load required packages
+library(dplyr)
+library(ggplot2)
+
+#Load data and convert to tbl format
+ToothGrowth <- tbl_df(ToothGrowth)
+```
+
+Let's start with the structure of the data and summarize its variables.
+
+```{r}
+# Structure of the data
+str(ToothGrowth)
+
+# Summary
+summary(ToothGrowth)
+```
+
+ToothGrowth contains 60 observations of 3 variables:
+
+* **len**: tooth length, numeric
+* **supp**: supplement type (VC:Vitamin C or OJ:orange juice), factor
+* **dose**: dose(in milligrams), numeric
+
+```{r}
+# Unique values in the dose vector
+unique(ToothGrowth$dose)
+```
+
+The numeric variable _dose_ contains only 3 unique values: 0.5, 1, 2. Let's convert it to a factor variable with three levels:
+
+```{r}
+# Convert to factor
+ToothGrowth <- ToothGrowth %>% mutate(dose = as.factor(dose))
+```
+
+#### Pictures!
+
+Let's look at the teeth length by supplement type.
+
+```{r}
+ggplot(data = ToothGrowth, aes(x=dose, y=len, fill = supp)) +
+geom_boxplot() +
+facet_grid(. ~ supp) +
+ggtitle("Teeth Length vs Dose level by Supplement type") +
+labs(x="dose(mg)", y= "teeth length ")
+```
+
+This shows relationship between teeth length and dose level per each supplement type. It appears to be a positive correlation for both Vitamin C and Orange Juice.
+
+Now let's look at teeth length by dose level.
+
+```{r}
+ggplot(data = ToothGrowth, aes(x = supp, y = len)) +
+geom_boxplot(aes(fill = supp)) +
+facet_wrap(~ dose) +
+ggtitle("Teeth Length vs Supplement type by Dose level ") +
+labs(x="supplement type", y= "teeth length ")
+```
+
+Where as there appears to be a difference in teeth length the supplement types at lower dosages (0.5 and 1), there doesn't appear to be much difference at the highest dose (2.0).
+
+```{r}
+ToothGrowth  %>% 
+  filter(dose == 2)  %>% 
+  group_by(supp)   %>%  
+  summarise(avg.length = mean(len))
+```
+
+Vitamin C appears to have a slight edge over Orange Juice at 2.0 mg, with average teeth length of 26.14 vs 26.06 respectively.
+
+### Hypothesis Tests 
+
+Now let's statistically compare teeth growth by supplement type and dose levels, using the t test. We'll run four tests: one to see if the supplements are significantly different, and then three at each dosage to test their differences.
+
+**Testing by Supplement**
+
+```{r}
+# Testing by Supplement
+t.test(len ~ supp, data = ToothGrowth)
+```
+
+Since the p-value of the test is 0.06 (and greater than 0.05) and the confidence
+interval of the test contains zero, we fail to reject the null hypothesis. Restating, that is to say that different supplement types don't correlate to longer teeth length.
+
+**Testing by dose levels**
+
+Next is testing to see if the three dosages have a significant difference in teeth length.
+
+First, create subsets based on the differences of dosages:
+```{r}
+# Create three subsets (by difference in dosages) for the t tests
+ToothGrowth.doses_0.5_1.0 <- subset(ToothGrowth, dose %in% c(0.5, 1.0))
+ToothGrowth.doses_0.5_2.0 <- subset(ToothGrowth, dose %in% c(0.5, 2.0))
+ToothGrowth.doses_1.0_2.0 <- subset(ToothGrowth, dose %in% c(1.0, 2.0))
+```
+
+
+* Test 1, dose = 0.5 and dose = 1
+
+```{r}
+# Test 1, dose = 0.5 and dose = 1
+t.test(len ~ dose, data = ToothGrowth.doses_0.5_1.0)
+```
+
+* Test 2, dose = 0.5 and dose = 2
+
+```{r}
+# Test 2, dose = 0.5 and dose = 2
+t.test(len ~ dose, data = ToothGrowth.doses_0.5_2.0)
+```
+
+* Test 3, dose = 1 and dose = 2
+
+```{r}
+# Test 3, dose = 1 and dose = 2
+t.test(len ~ dose, data = ToothGrowth.doses_1.0_2.0)
+```
+
+For all three of the dosages t-tests, the p-value is less than 0.5 and the confidence intervals do not contain zero. We reject the null hypothesis. Restating, there is a significant difference that higher dosage levels correlates to an longer tooth length.
+
+
+### Conclusions
+
+By using t-tests, we should check for:
+
+* Independent and identically distributed samples: there must be random sampling/assignment
+
+* Normality: the population distribution must be normal or quasi-normal 
+
+Assuming the above conditions are true, we now conclude:
+
+**There is a statistically significant difference between teeth length and dose levels, restating, a positive correlation between higher dosages and longer teeth length.** 
+
+**However, there is not a statistically significant difference between supplements.**
