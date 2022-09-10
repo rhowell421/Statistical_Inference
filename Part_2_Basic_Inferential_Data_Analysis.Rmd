@@ -3,10 +3,10 @@ title: "ToothGrowth Analysis"
 author: "Rhowell"
 date: "September 9, 2022"
 output: 
+  pdf_document: default
   html_document:
     keep_md: yes
     theme: readable
-  pdf_document: default
 ---
 
 
@@ -69,11 +69,11 @@ ToothGrowth <- ToothGrowth %>% mutate(dose = as.factor(dose))
 
 Let's look at the teeth length by supplement type.
 
-```{r}
+```{r, fig.height=3, fig.width=4}
 ggplot(data = ToothGrowth, aes(x=dose, y=len, fill = supp)) +
 geom_boxplot() +
 facet_grid(. ~ supp) +
-ggtitle("Teeth Length vs Dose level by Supplement type") +
+ggtitle("Teeth Length vs Dose level \n by Supplement type") +
 labs(x="dose(mg)", y= "teeth length ")
 ```
 
@@ -81,11 +81,11 @@ This shows relationship between teeth length and dose level per each supplement 
 
 Now let's look at teeth length by dose level.
 
-```{r}
+```{r, fig.height=3, fig.width=4}
 ggplot(data = ToothGrowth, aes(x = supp, y = len)) +
 geom_boxplot(aes(fill = supp)) +
 facet_wrap(~ dose) +
-ggtitle("Teeth Length vs Supplement type by Dose level ") +
+ggtitle("Teeth Length vs Supplement type \n by Dose level ") +
 labs(x="supplement type", y= "teeth length ")
 ```
 

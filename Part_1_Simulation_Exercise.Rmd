@@ -1,12 +1,12 @@
 ---
-title: "Monte Carlo Proof of Concept"
+title: "Monte Carlo Error Visualization"
 author: "Rhowell"
 date: "September 9, 2022"
 output: 
+  pdf_document: default
   html_document:
     keep_md: yes
     theme: readable
-  pdf_document: default
 ---
 
 
@@ -37,7 +37,7 @@ sim_matrix <- matrix(data=rexp(n * num_of_sim, lambda), nrow=num_of_sim)
 
 Take the means and store the results in _sim_means_ and compare the theoretical mean for an the monte carlo simulation, given by mu = 1/lambda = 5, as mean of our simulated distribution.
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, fig.height=3, fig.width=4}
 # Mean for each of the 1000 simulations (rows)
 sim_means <- data.frame(means=apply(sim_matrix, 1, mean)) 
 
@@ -80,7 +80,7 @@ $$ Z = {(\bar{X} - {1 \over \lambda}) \over ({1 \over \lambda} / \sqrt(n))} $$
 This should result in a normal distribution centered at zero. I create a plot comparing the density of our transformed sample means distribution with the density of the standard normal distribution.
 
 
-```{r}
+```{r, fig.height=3, fig.width=4}
 # Mean of our normalized means
 (z_mean <- sim_means %>%  mutate(z_score = (means - 1/lambda) / (1/lambda / sqrt(n)))  %>% select(z_score) %>%
    summarise(z_mean = mean(z_score)) %>% unlist())
